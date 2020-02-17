@@ -31,6 +31,7 @@ class ScoresClass:
             'name': name,
         })
         self.sortScores()
+        self.writeFile()
 
     def writeFile(self):
         with open(self.file_name, 'w') as outfile:
@@ -52,9 +53,12 @@ class ScoresClass:
             self.scores = newscores
 
     def printScores(self):
-        print('NAME', ' ' * 25, 'TIME')
+        str = 'NAME\t\t\tTIME\n'
         for i in self.scores:
-            print('{:_<30}{:02}:{:02}'.format(i['name'], int(i['score'][0:2]), int(i['score'][2:4])))
+            a = '{: <16}\t\t{:02}:{:02}\n'
+            a = a.format(i['name'], int(i['score'][0:2]), int(i['score'][2:4]))
+            str = str + a
+        return str
 
 
 

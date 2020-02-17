@@ -2,16 +2,21 @@ import pygame
 from pygame.locals import *
 from random import randint
 import high_scores
+import tkinter as tk
+from tkinter import simpledialog
+from tkinter import messagebox
+
 
 # Константы
+DEBUG = 0                     # Отлатка - будем печатать в консоль
 FPS = 300                     # Кадров в секунду. Есть связь с временем перемешивания версии 2
 TILESIZE_X = 40               # Размер плитки по X
 TILESIZE_Y = 40               # Размер плитки по Y
 SIZE_X = 4 * TILESIZE_X       # Размер экрана по X - 4 * размер плитки по X
 SIZE_Y = 4 * TILESIZE_Y       # Размер экрана по Y - 4 * размер плитки по Y
-SHUFFLE_VERSION = 1           # Версия перемешивания: 1 - случайное заполнение;
-                              # 2 - визуальное случайное перемешивание
-                              # (исключает неразрешаемую задачу по перестановке 14 и 15)
+SHUFFLE_VERSION = 2           # Версия перемешивания: 1 - случайное заполнение;
+                              # 2 - перемешивание правильно выстроенных пятнашек как человек случайными ходами
+                              # (исключает неразрешаемую задачу по перестановке 14 и 15 местами)
 SHUFFLE_STEPS = 1500          # Количество шагов по перемешиванию для версии 2
 HIGH_SCORES_FILE = "scores.dat"
 
@@ -94,7 +99,7 @@ class App:
         event = pygame.event.Event(pygame.KEYDOWN, {'key' : randint(237, 276)})
         pygame.event.post(event)
         self.shuffling -= 1
-        if self.shuffling == 0: print("SHUFFLE TIME: {:02}:{:02}".format(int(self.playtime / 60), int(self.playtime - int(self.playtime / 60) * 60)))
+        if self.shuffling == 0 and DEBUG: print("SHUFFLE TIME: {:02}:{:02}".format(int(self.playtime / 60), int(self.playtime - int(self.playtime / 60) * 60)))
 
 
     # Функция класса App которая проверяет собрали ли мы пазл
@@ -113,9 +118,21 @@ class App:
         # Значит в цикле выше все плитки были на своем месте и 15ки собраны полностью и правильно
         str = '{:02}{:02}'
         str = str.format(int(self.playtime / 60), int(self.playtime - int(self.playtime / 60) * 60))
-        self.player_name = input('Player Name: ')
-        self.high_scores.addScore(self.player_name, str)
-        self.high_scores.writeFile()
+        # Спрашиваем имя игрока
+        application_window = tk.Tk()
+        application_window.withdraw()
+        self.player_name = simpledialog.askstring("Nicely done!", "                            What is your name?                            ", parent=application_window)
+        self.player_name = self.player_name[0:15]
+
+        # Добавляем рекорд в таблицу рекордов
+        if self.player_name:
+            self.high_scores.addScore(self.player_name, str)
+            self.high_scores.writeFile()
+
+        # Показываем таблицу рекордов
+        str = self.high_scores.printScores()
+        messagebox.showinfo("High Scores", str)
+        application_window.destroy()
 
         return True
 
@@ -166,6 +183,11 @@ class App:
     # Функция класса App по отрисовке экрана игры
     # Очищаем экран (заполняем белым) и выводим плитки согласно их позициям в tiles
     def on_render(self):
+        # Если перемешиваем, то показываем countdown
+        if self.shuffling:
+            self._display_surf.blit(self.tile_images[int(self.shuffling / SHUFFLE_STEPS * 10) + 1], (SIZE_X // 2 - TILESIZE_X // 2, SIZE_Y // 2 - TILESIZE_Y // 2))
+            pygame.display.update((SIZE_X // 2 - TILESIZE_X // 2, SIZE_Y // 2 - TILESIZE_Y // 2, SIZE_X // 2 + TILESIZE_X // 2, SIZE_Y // 2 + TILESIZE_Y // 2))  # обновляем только часть экрана для ускорения
+            return
         self._display_surf.fill((225, 225, 225))                                    # Заполняем экран белым
         for y in range(4):                                                          # Цикл по y от 0 до 3
             for x in range(4):                                                      # Вложенный цикл по x jn 0 до 3
@@ -176,7 +198,6 @@ class App:
     # Выводим время игры, очишаем память, разрушаем объекты и т.п.
     def on_cleanup(self):
         # Выводим в консоль прошедшее время игры
-        self.high_scores.printScores()
         pygame.quit()                                       # Завершаем работу модуля pygame
 
     # Функция класса App работающая при начале игры
@@ -192,8 +213,8 @@ class App:
                 self.shuffle2()
             for event in pygame.event.get():                # Получаем событие от pygame
                 self.on_event(event)                        # Обрабатываем событие
-            self.on_loop()                                  # Обрабатываем время и проверяем собрали ли мы 15ки в методе on_loop
             self.on_render()                                # Отрисовываем все
+            self.on_loop()                                  # Обрабатываем время и проверяем собрали ли мы 15ки в методе on_loop
         self.on_cleanup()                                   # По завершении цикла вызываем метод on_cleanup()
 
 
