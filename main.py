@@ -70,12 +70,13 @@ class App:
     # Функция инициализации класса App
     # инициализируем то, что нельзя инициализировать выше
     def on_init(self):
-        pygame.init()                               # Инициализация модуля pygame
-        pygame.display.set_caption('15ки v1.0a')    # Устанавливаем название окна
+        pygame.init()                                   # Инициализация модуля pygame
+        pygame.display.set_caption('15ки v1.0a')        # Устанавливаем название окна
+        pygame.display.set_icon(self.tile_images[15])   # Устанавливаем иконку окна приложения
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)    # Создаем объект экрана
-        if SHUFFLE_VERSION == 1: self.shuffle1()    # Если версия перемешивани 1, иначе будет работать версия 2 в главном цикле
+        if SHUFFLE_VERSION == 1: self.shuffle1()        # Если версия перемешивани 1, иначе будет работать версия 2 в главном цикле
         self.high_scores = high_scores.ScoresClass(HIGH_SCORES_FILE, 10)
-        self._running = True                        # Включаем основной цикл игры
+        self._running = True                            # Включаем основной цикл игры
 
     # Функция класса App перемешивает плитки
     # Версия 1
