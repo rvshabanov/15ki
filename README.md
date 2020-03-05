@@ -1,3 +1,3 @@
-Игра 15ки на Пайтоне
-Fifteen puzzle game on Python
+# Fifteen puzzle game
 
+- My 1st python game :)
